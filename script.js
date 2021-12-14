@@ -27,7 +27,7 @@ const monthNames = [
   "Ноябрь",
   "Декабрь",
 ];
-const createBuy = () => {
+const addBuy = () => {
   data[year][month][
     Date.now()
   ] = `${buyInput.value},${sumInput.value},${targetInput.value}`;
@@ -45,33 +45,55 @@ const loadTables = function () {
     data[year][month] = {};
   }
   chosenMonth = data[year][month];
-  let sumAll = +0;
-  let sumFood = +0;
-  let sumLife = +0;
-  let sumEntert = +0;
+  let sumObj = {
+    sumAll: +0,
+    sumFood: +0,
+    sumLife: +0,
+    sumEntert: +0,
+  };
   let h1 = document.createElement("h1");
   document.body.appendChild(h1);
-  h1.insertAdjacentHTML(
-    "beforeend",
-    '<input value="\u{23EA}" onclick="chMonthPrew()" type="button">' +
-      monthNames[month] +
-      '<input value="\u{23E9}" onclick="chMonthNext()" type="button">'
-  );
-
-  document.body.insertAdjacentHTML(
-    "beforeend",
-    `<table id='firstTable'>
-    <tr><th>Дата</th><th>Покупка</th><th>Сумма</th><th>Назначение</th></tr>
-  </table>
-  <table id='secondTable'>
-    <tr><th>Всего</th><th>Продукты</th><th>Быт</th><th>Досуг</th></tr>
-    <tr></tr>
-  </table>`
-  );
+  let buttonMoPr = document.createElement("input");
+  buttonMoPr.value = "\u{23EA}";
+  buttonMoPr.type = "button";
+  buttonMoPr.addEventListener("click", chMonthPrew);
+  h1.appendChild(buttonMoPr);
+  let monthName = document.createTextNode(monthNames[month]);
+  h1.appendChild(monthName);
+  let buttonMoNe = document.createElement("input");
+  buttonMoNe.value = "\u{23E9}";
+  buttonMoNe.type = "button";
+  buttonMoNe.addEventListener("click", chMonthNext);
+  h1.appendChild(buttonMoNe);
+  {
+    let firstTable = document.createElement("table");
+    firstTable.id = "firstTable";
+    document.body.appendChild(firstTable);
+    let tr = document.createElement("tr");
+    firstTable.appendChild(tr);
+    ["Дата", "Покупка", "Сумма", "Назначение"].forEach(function (item) {
+      let th = document.createElement("th");
+      th.innerHTML = item;
+      tr.appendChild(th);
+    });
+  }
+  {
+    let secondTable = document.createElement("table");
+    secondTable.id = "secondTable";
+    document.body.appendChild(secondTable);
+    let tr = document.createElement("tr");
+    secondTable.appendChild(tr);
+    ["Всего", "Продукты", "Быт", "Досуг"].forEach(function (item) {
+      let th = document.createElement("th");
+      th.innerHTML = item;
+      tr.appendChild(th);
+    });
+  }
   Object.keys(chosenMonth).forEach((key) => {
     const date = new Date(parseInt(key)).getDate();
-    let trArray = ([buyName, price, buyTarget] = chosenMonth[key].split(","));
-    trArray.unshift(date);
+    let trArray = [date].concat(
+      ([buyName, price, buyTarget] = chosenMonth[key].split(","))
+    );
     trArray[2] = parseInt(trArray[2]);
     let tr = document.createElement("tr");
     firstTable.appendChild(tr);
@@ -83,24 +105,28 @@ const loadTables = function () {
     let td = document.createElement("td");
     td.id = "inputButton";
     tr.appendChild(td);
-    let inputOnclick = document.createElement("input");
+    /*let inputOnclick = document.createElement("input");
     inputOnclick.value = "\u{274C}";
     inputOnclick.type = "button";
-    tr.addEventListener("click", deleteBuy);
+    inputOnclick.addEventListener("click", deleteBuy);
     td.appendChild(inputOnclick);
     td.setAttribute("data-timeSt", key);
+
+     */
     switch (trArray[3]) {
       case "Еда":
-        sumFood += trArray[2];
+        sumObj.sumFood += trArray[2];
         break;
       case "Быт":
-        sumLife += trArray[2];
+        sumObj.sumLife += trArray[2];
         break;
       case "Развлечения":
-        sumEntert += trArray[2];
+        sumObj.sumEntert += trArray[2];
+        break;
+      default:
         break;
     }
-    sumAll += trArray[2];
+    sumObj.sumAll += trArray[2];
   });
   let tr = document.createElement("tr");
   firstTable.appendChild(tr);
@@ -110,30 +136,35 @@ const loadTables = function () {
     let input = document.createElement("input");
     input.id = item + "Input";
     input.type = "text";
+
     th.appendChild(input);
   });
   let thTargetInput = document.createElement("th");
   tr.appendChild(thTargetInput);
   let targetInput = document.createElement("select");
   targetInput.id = "targetInput";
-  targetInput.type = text;
-  thTargetInput.appendChild(targetInpute);
-  let arrSelect = ["Еда", "Быт", "Развлечения"];
-  arrSelect.forEach(function (item) {
+  targetInput.type = "text";
+  thTargetInput.appendChild(targetInput);
+  ["Еда", "Быт", "Развлечения"].forEach(function (item) {
     let option = document.createElement("option");
     option.value = item;
     option.innerHTML = item;
     targetInput.appendChild(option);
   });
-  secondTable.insertAdjacentHTML(
-    "beforeend",
-    `
- <tr><th>${sumAll}</th>
- <th>${sumFood}</th>
- <th>${sumLife}</th>
- <th>${sumEntert}</th>
- </tr>`
-  );
+  let buttonAddBuy = document.createElement("input");
+  buttonAddBuy.value = "\u{2705}";
+  buttonAddBuy.type = "button";
+  buttonAddBuy.addEventListener("click", addBuy);
+  tr.appendChild(buttonAddBuy);
+  {
+    let tr = document.createElement("tr");
+    secondTable.appendChild(tr);
+    Object.keys(sumObj).forEach((key) => {
+      let th = document.createElement("th");
+      th.innerHTML = sumObj[key];
+      tr.appendChild(th);
+    });
+  }
 };
 
 let chosenDate = new Date();
